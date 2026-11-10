@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard WiFi UTS - Plan de 8 Actividades</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .transition-all-custom { transition: all 0.25s ease-in-out; }
+    .badge-critical { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
+
+  <!-- TOP HEADER -->
+  <header class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white shadow-lg sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-blue-600/30 rounded-xl border border-blue-400/30">
+          <i data-lucide="wifi" class="w-7 h-7 text-blue-300"></i>
+        </div>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-bold tracking-tight">Plan de Expansión WiFi UTS</h1>
+          <p class="text-xs sm:text-sm text-blue-200">Mejora de Cobertura y Capacidad Institucional · Cronograma de 8 Semanas</p>
+        </div>
+      </div>
+      <!-- Progress Pill -->
+      <div class="flex items-center gap-4 bg-slate-800/80 px-4 py-2 rounded-xl border border-slate-700 w-full md:w-auto justify-between md:justify-start">
+        <div class="text-right">
+          <p class="text-xs text-slate-400 font-medium">Progreso Global</p>
+          <p id="progressPercent" class="text-lg font-bold text-emerald-400">0%</p>
+        </div>
+        <div class="w-32 bg-slate-700 rounded-full h-2.5 overflow-hidden">
+          <div id="progressBar" class="bg-emerald-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <!-- RESUMEN / KPIS -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Duración Total</p>
+          <p class="text-2xl font-bold text-slate-800 mt-1">8 Semanas</p>
+          <span class="text-xs text-slate-400">Estimación preliminar</span>
+        </div>
+        <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i data-lucide="calendar"></i></div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Actividades</p>
+          <p class="text-2xl font-bold text-slate-800 mt-1">8 Fases</p>
+          <span id="completedCounter" class="text-xs text-emerald-600 font-medium">0 completadas</span>
+        </div>
+        <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="check-square"></i></div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-amber-200/80 bg-amber-50/20 flex items-center justify-between">
+        <div>
+          <span class="inline-block px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800 rounded-full mb-1">Actividad Crítica</span>
+          <p class="text-sm font-bold text-slate-800">Actividad 2: Diagnóstico</p>
+          <span class="text-xs text-amber-700">Condiciona diseño y presupuesto</span>
+        </div>
+        <div class="p-3 bg-amber-100 text-amber-700 rounded-xl"><i data-lucide="alert-triangle"></i></div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-emerald-200/80 bg-emerald-50/20 flex items-center justify-between">
+        <div>
+          <span class="inline-block px-2 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-800 rounded-full mb-1">Hito Final</span>
+          <p class="text-sm font-bold text-slate-800">Semana 8: Aceptación</p>
+          <span class="text-xs text-emerald-700">Entrega de acta y pruebas</span>
+        </div>
+        <div class="p-3 bg-emerald-100 text-emerald-600 rounded-xl"><i data-lucide="award"></i></div>
+      </div>
+    </section>
+
+    <!-- BARRA DE BOTONES Y FILTROS -->
+    <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <div>
+          <h2 class="font-bold text-slate-800 text-base flex items-center gap-2">
+            <i data-lucide="sliders" class="w-4 h-4 text-blue-600"></i> Filtros Interactivos
+          </h2>
+          <p class="text-xs text-slate-500">Haz clic en los botones para aislar actividades por semana, prioridad o estado.</p>
+        </div>
+        <button onclick="resetFilters()" class="text-xs font-semibold text-blue-600 hover:text-blue-800 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors flex items-center gap-1.5">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Restablecer Filtros
+        </button>
+      </div>
+
+      <!-- Botones por Semana -->
+      <div class="space-y-1.5">
+        <label class="text-xs font-semibold uppercase text-slate-400">Filtrar por Semana de Ejecución:</label>
+        <div class="flex flex-wrap gap-1.5" id="weekFilters">
+          <button onclick="filterByWeek('all')" class="week-btn active px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white shadow-sm transition-all" data-week="all">Todas</button>
+          <button onclick="filterByWeek(1)" class="week-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all" data-week="1">Semana 1</button>
+          <button onclick="filterByWeek(2)" class="week-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all" data-week="2">Semana 2</button>
+          <button onclick="filterByWeek(3)" class="week-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all" data-week="3">Semana 3</button>
+          <button onclick="filterByWeek(4)" class="week-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all" data-week="4">Semana 4</button>
+          <button onclick="filterByWeek(5)" class="week-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all" data-week="5">Semana 5</button>
+          <button onclick="filterByWeek(6)" class="week-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all" data-week="6">Semana 6</button>
+          <button onclick="filterByWeek(7)" class="week-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all" data-week="7">Semana 7</button>
+          <button onclick="filterByWeek(8)" class="week-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all" data-week="8">Semana 8</button>
+        </div>
+      </div>
+
+      <!-- Botones por Prioridad / Responsable -->
+      <div class="flex flex-wrap gap-4 pt-1">
+        <div class="space-y-1.5">
+          <label class="text-xs font-semibold uppercase text-slate-400">Prioridad:</label>
+          <div class="flex flex-wrap gap-1.5" id="prioFilters">
+            <button onclick="filterByPrio('all')" class="prio-btn active px-3 py-1 text-xs font-medium rounded-md bg-slate-800 text-white" data-prio="all">Todas</button>
+            <button onclick="filterByPrio('CRÍTICA')" class="prio-btn px-3 py-1 text-xs font-medium rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700" data-prio="CRÍTICA">Crítica (Act. 2)</button>
+            <button onclick="filterByPrio('Alta')" class="prio-btn px-3 py-1 text-xs font-medium rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700" data-prio="Alta">Alta</button>
+            <button onclick="filterByPrio('Media')" class="prio-btn px-3 py-1 text-xs font-medium rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700" data-prio="Media">Media</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CRONOGRAMA INTERACTIVO (GANTT) -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="p-5 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-slate-50/50">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <i data-lucide="bar-chart-3" class="w-5 h-5 text-blue-600"></i> Cronograma de Ejecución (Diagrama Gantt)
+          </h2>
+          <p class="text-xs text-slate-500">Pasa el cursor o haz clic en cualquier barra para ver el detalle de la actividad.</p>
+        </div>
+        <div class="text-xs text-slate-500 bg-white px-3 py-1.5 rounded-lg border border-slate-200">
+          <span class="inline-block w-2.5 h-2.5 rounded-sm bg-amber-500 mr-1"></span> Act. Crítica
+          <span class="inline-block w-2.5 h-2.5 rounded-sm bg-blue-600 ml-3 mr-1"></span> Planificada
+          <span class="inline-block w-2.5 h-2.5 rounded-sm bg-emerald-500 ml-3 mr-1"></span> Hito S8
+        </div>
+      </div>
+
+      <div class="overflow-x-auto p-4 sm:p-6">
+        <div class="min-w-[700px]">
+          <!-- Gantt Header (Weeks) -->
+          <div class="grid grid-cols-12 gap-2 pb-3 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">
+            <div class="col-span-4 text-left pl-2">Actividad / Tarea</div>
+            <div class="col-span-1">S1</div>
+            <div class="col-span-1">S2</div>
+            <div class="col-span-1">S3</div>
+            <div class="col-span-1">S4</div>
+            <div class="col-span-1">S5</div>
+            <div class="col-span-1">S6</div>
+            <div class="col-span-1">S7</div>
+            <div class="col-span-1">S8</div>
+          </div>
+
+          <!-- Gantt Rows Generated Dynamically -->
+          <div id="ganttContainer" class="divide-y divide-slate-100">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LISTA DE ACTIVIDADES EN FORMATO TARJETA / CHECKLIST -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <i data-lucide="layers" class="w-5 h-5 text-blue-600"></i> Plan Detallado de Actividades
+        </h2>
+        <span id="shownCount" class="text-xs font-medium text-slate-500">Mostrando 8 actividades</span>
+      </div>
+
+      <div id="activitiesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Activity Cards Injected via JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL DE DETALLES DE ACTIVIDAD -->
+  <div id="activityModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in duration-150">
+      <div id="modalHeader" class="p-6 text-white flex justify-between items-start">
+        <div>
+          <span id="modalBadge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-white/20 uppercase tracking-wider"></span>
+          <h3 id="modalTitle" class="text-xl font-bold mt-2"></h3>
+          <p id="modalWeeks" class="text-xs text-blue-100 mt-0.5"></p>
+        </div>
+        <button onclick="closeModal()" class="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 transition">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+      
+      <div class="p-6 space-y-4 text-sm">
+        <div>
+          <h4 class="font-bold text-slate-700 flex items-center gap-1.5 text-xs uppercase tracking-wider text-slate-400">
+            <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> ¿Por qué es importante?
+          </h4>
+          <p id="modalWhy" class="mt-1 text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-200/80"></p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <h4 class="font-bold text-slate-400 text-xs uppercase tracking-wider">Responsable Principal</h4>
+            <p id="modalResp" class="mt-1 font-semibold text-slate-800"></p>
+          </div>
+          <div>
+            <h4 class="font-bold text-slate-400 text-xs uppercase tracking-wider">Dependencia Previa</h4>
+            <p id="modalDep" class="mt-1 text-slate-700"></p>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-400 text-xs uppercase tracking-wider">Participantes y Apoyo</h4>
+          <p id="modalSupport" class="mt-1 text-slate-700"></p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-400 text-xs uppercase tracking-wider">Entregable o Evidencia</h4>
+          <div class="mt-1 p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl text-emerald-900 font-medium flex items-start gap-2">
+            <i data-lucide="file-check" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>
+            <span id="modalDeliverable"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end">
+        <button onclick="closeModal()" class="px-5 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-100 transition shadow-sm">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT CON DATOS Y LÓGICA -->
+  <script>
+    // MATRIZ COMPLETA DE ACTIVIDADES SEGÚN DOCUMENTO
+    const activitiesData = [
+      {
+        id: 1,
+        title: "Definir alcance y confirmación de la necesidad",
+        fullTitle: "Inicio del proyecto y confirmación de la necesidad",
+        dep: "Ninguna (inicio)",
+        resp: "Cliente: UTS / área de TI",
+        support: "Equipo del proyecto y representantes de estudiantes, docentes y administrativos",
+        deliverable: "Acta de inicio y necesidad aprobada",
+        priority: "Media",
+        weeks: [1],
+        why: "Define el alcance, los usuarios afectados y los objetivos del proyecto.",
+        result: "Alcance y objetivos definidos",
+        completed: false
+      },
+      {
+        id: 2,
+        title: "Diagnóstico de cobertura, capacidad e infraestructura actual",
+        fullTitle: "Diagnóstico de cobertura, capacidad e infraestructura actual",
+        dep: "Actividad 1",
+        resp: "Equipo técnico de las UTS",
+        support: "Cliente: área de TI; proveedor especializado, si se requiere",
+        deliverable: "Mapa de cobertura, mediciones de señal, cantidad de usuarios e inventario de AP",
+        priority: "CRÍTICA",
+        weeks: [1, 2],
+        why: "Es la actividad más crítica: sus resultados determinan dónde intervenir, qué capacidad se necesita y qué solución comprar.",
+        result: "Problemas y necesidades medidos",
+        completed: false
+      },
+      {
+        id: 3,
+        title: "Diseño de la solución y selección de ubicación de AP",
+        fullTitle: "Diseño de la solución y selección de ubicación de los puntos de acceso",
+        dep: "Actividad 2",
+        resp: "Equipo técnico / diseñador de redes",
+        support: "Área de TI y proveedor tecnológico",
+        deliverable: "Diseño de red, plano de ubicación de AP, capacidad estimada y medidas de seguridad",
+        priority: "Alta",
+        weeks: [2, 3],
+        why: "Convierte el diagnóstico en una solución técnica que responda a las necesidades detectadas.",
+        result: "Diseño técnico definido",
+        completed: false
+      },
+      {
+        id: 4,
+        title: "Validación del presupuesto y aprobación de inversión",
+        fullTitle: "Validación del presupuesto y aprobación de la inversión",
+        dep: "Actividad 3",
+        resp: "Cliente: dirección / área administrativa de las UTS",
+        support: "Área de TI y equipo del proyecto",
+        deliverable: "Presupuesto aprobado y alcance autorizado",
+        priority: "Alta",
+        weeks: [3, 4],
+        why: "Asegura que la solución diseñada sea viable y cuente con recursos.",
+        result: "Recursos aprobados",
+        completed: false
+      },
+      {
+        id: 5,
+        title: "Selección del proveedor, negociación y adquisición",
+        fullTitle: "Selección del proveedor, negociación y adquisición de equipos",
+        dep: "Actividad 4",
+        resp: "Cliente: área de compras / contratación de las UTS",
+        support: "Área de TI, proveedor y equipo del proyecto",
+        deliverable: "Cotizaciones comparadas, proveedor seleccionado, orden de compra y SLA",
+        priority: "Alta",
+        weeks: [4, 5],
+        why: "Permite adquirir equipos compatibles y establecer responsabilidades y condiciones de servicio.",
+        result: "Equipos y proveedor confirmados",
+        completed: false
+      },
+      {
+        id: 6,
+        title: "Preparación de la infraestructura física y lógica",
+        fullTitle: "Preparación de la infraestructura física y lógica",
+        dep: "Actividad 5",
+        resp: "Proveedor de instalación / equipo técnico de las UTS",
+        support: "Área de TI, personal de cableado y mantenimiento",
+        deliverable: "Cableado, switches PoE, puertos, VLAN, energía y conectividad preparados",
+        priority: "Alta",
+        weeks: [5, 6],
+        why: "Deja lista la infraestructura necesaria antes de instalar y configurar los nuevos AP.",
+        result: "Sitio e infraestructura listos",
+        completed: false
+      },
+      {
+        id: 7,
+        title: "Instalación y configuración de AP y seguridad",
+        fullTitle: "Instalación y configuración de puntos de acceso y seguridad",
+        dep: "Actividad 6",
+        resp: "Proveedor tecnológico / instalador",
+        support: "Equipo técnico de las UTS y responsable de seguridad",
+        deliverable: "Puntos de acceso instalados, configurados e integrados; firewall revisado",
+        priority: "Alta",
+        weeks: [6, 7],
+        why: "Implementa físicamente la solución y habilita el servicio WiFi mejorado.",
+        result: "Red WiFi implementada",
+        completed: false
+      },
+      {
+        id: 8,
+        title: "Pruebas, monitoreo, capacitación y entrega (Hito S8)",
+        fullTitle: "Pruebas, monitoreo, capacitación y entrega del servicio",
+        dep: "Actividad 7",
+        resp: "Equipo técnico de las UTS",
+        support: "Proveedor, mesa de ayuda y usuarios representantes",
+        deliverable: "Resultados de pruebas de cobertura/carga, monitoreo, capacitación y acta de entrega",
+        priority: "Alta",
+        weeks: [8],
+        why: "Verifica que la solución cumpla los requisitos y que el personal pueda operarla y mantenerla.",
+        result: "Servicio validado y entregado",
+        completed: false
+      }
+    ];
+
+    // ESTADO DE FILTROS
+    let currentWeekFilter = 'all';
+    let currentPrioFilter = 'all';
+
+    // RENDERIZADO INICIAL
+    document.addEventListener("DOMContentLoaded", () => {
+      renderGantt();
+      renderCards();
+      updateProgress();
+      lucide.createIcons();
+    });
+
+    // DIBUJAR GANTT
+    function renderGantt() {
+      const container = document.getElementById("ganttContainer");
+      container.innerHTML = "";
+
+      activitiesData.forEach(act => {
+        const row = document.createElement("div");
+        row.className = "grid grid-cols-12 gap-2 py-3.5 items-center hover:bg-slate-50/80 transition-colors rounded-xl px-2 cursor-pointer";
+        row.onclick = () => openModal(act.id);
+
+        let badgePrio = "";
+        let barColor = "bg-blue-600 hover:bg-blue-700";
+
+        if (act.priority === "CRÍTICA") {
+          badgePrio = `<span class="ml-1.5 px-1.5 py-0.5 text-[9px] font-extrabold bg-amber-500 text-white rounded">CRÍTICA</span>`;
+          barColor = "bg-amber-500 hover:bg-amber-600 shadow-sm";
+        } else if (act.id === 8) {
+          badgePrio = `<span class="ml-1.5 px-1.5 py-0.5 text-[9px] font-extrabold bg-emerald-600 text-white rounded">HITO</span>`;
+          barColor = "bg-emerald-600 hover:bg-emerald-700 shadow-sm";
+        }
+
+        // Título columna izquierda
+        let colTitle = `
+          <div class="col-span-4 pr-2 flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-bold flex items-center justify-center shrink-0">${act.id}</span>
+            <div class="truncate">
+              <span class="text-xs font-semibold text-slate-800 hover:text-blue-600">${act.title}</span>
+              ${badgePrio}
+            </div>
+          </div>
+        `;
+
+        // Columnas semanas 1 a 8
+        let colWeeks = "";
+        for (let w = 1; w <= 8; w++) {
+          const isActive = act.weeks.includes(w);
+          if (isActive) {
+            colWeeks += `
+              <div class="col-span-1 flex items-center justify-center">
+                <div class="w-full h-7 rounded-md ${barColor} text-white flex items-center justify-center text-[10px] font-bold shadow-xs transition-transform hover:scale-105" title="${act.title} (Semana ${w})">
+                  S${w}
+                </div>
+              </div>
+            `;
+          } else {
+            colWeeks += `
+              <div class="col-span-1 flex items-center justify-center">
+                <div class="w-full h-1 bg-slate-100 rounded-full"></div>
+              </div>
+            `;
+          }
+        }
+
+        row.innerHTML = colTitle + colWeeks;
+        container.appendChild(row);
+      });
+    }
+
+    // DIBUJAR TARJETAS
+    function renderCards() {
+      const container = document.getElementById("activitiesContainer");
+      container.innerHTML = "";
+
+      const filtered = activitiesData.filter(act => {
+        const matchesWeek = (currentWeekFilter === 'all') || act.weeks.includes(parseInt(currentWeekFilter));
+        const matchesPrio = (currentPrioFilter === 'all') || (act.priority.toUpperCase() === currentPrioFilter.toUpperCase());
+        return matchesWeek && matchesPrio;
+      });
+
+      document.getElementById("shownCount").innerText = `Mostrando ${filtered.length} de ${activitiesData.length} actividades`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-2 py-12 text-center text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200">
+            <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-2 text-slate-300"></i>
+            <p class="text-sm">No hay actividades que coincidan con los filtros aplicados.</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      filtered.forEach(act => {
+        const card = document.createElement("div");
+        const isCritical = act.priority === "CRÍTICA";
+        card.className = `bg-white rounded-2xl p-5 border transition-all duration-200 hover:shadow-md flex flex-col justify-between ${isCritical ? 'border-amber-300 ring-2 ring-amber-100' : 'border-slate-200'}`;
+
+        card.innerHTML = `
+          <div class="space-y-3">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg ${isCritical ? 'bg-amber-500 text-white' : 'bg-slate-800 text-white'} text-xs font-bold flex items-center justify-center shrink-0">
+                  ${act.id}
+                </span>
+                <span class="text-xs font-bold px-2 py-0.5 rounded-md ${isCritical ? 'bg-amber-100 text-amber-800' : (act.priority === 'Alta' ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-600')}">
+                  Prioridad: ${act.priority}
+                </span>
+              </div>
+              <span class="text-xs font-semibold px-2 py-1 bg-slate-100 text-slate-600 rounded-lg">
+                ${act.weeks.map(w => 'S' + w).join(', ')} (${act.weeks.length} sem)
+              </span>
+            </div>
+
+            <h3 class="font-bold text-slate-800 text-sm leading-snug cursor-pointer hover:text-blue-600" onclick="openModal(${act.id})">
+              ${act.fullTitle}
+            </h3>
+
+            <p class="text-xs text-slate-500 line-clamp-2">${act.why}</p>
+
+            <div class="space-y-1.5 pt-2 border-t border-slate-100 text-xs">
+              <div class="flex items-center gap-1.5 text-slate-600">
+                <i data-lucide="user" class="w-3.5 h-3.5 text-slate-400"></i>
+                <span class="font-medium text-slate-700 truncate">${act.resp}</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-slate-600">
+                <i data-lucide="corner-down-right" class="w-3.5 h-3.5 text-slate-400"></i>
+                <span>Depende de: <strong>${act.dep}</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" ${act.completed ? 'checked' : ''} onchange="toggleComplete(${act.id})" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300">
+              <span class="text-xs font-semibold ${act.completed ? 'text-emerald-600' : 'text-slate-500'}">
+                ${act.completed ? 'Completada' : 'Pendiente'}
+              </span>
+            </label>
+            <button onclick="openModal(${act.id})" class="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1">
+              Ver detalle <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+
+      lucide.createIcons();
+    }
+
+    // GESTIÓN DE CHECKBOX Y AVANCE
+    function toggleComplete(id) {
+      const act = activitiesData.find(a => a.id === id);
+      if (act) {
+        act.completed = !act.completed;
+        updateProgress();
+        renderCards();
+      }
+    }
+
+    function updateProgress() {
+      const completedCount = activitiesData.filter(a => a.completed).length;
+      const total = activitiesData.length;
+      const percent = Math.round((completedCount / total) * 100);
+
+      document.getElementById("progressPercent").innerText = `${percent}%`;
+      document.getElementById("progressBar").style.width = `${percent}%`;
+      document.getElementById("completedCounter").innerText = `${completedCount} de ${total} completadas`;
+    }
+
+    // BOTONES DE FILTRO
+    function filterByWeek(week) {
+      currentWeekFilter = week;
+      document.querySelectorAll(".week-btn").forEach(btn => {
+        if (btn.dataset.week == week) {
+          btn.className = "week-btn active px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white shadow-sm transition-all";
+        } else {
+          btn.className = "week-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all";
+        }
+      });
+      renderCards();
+    }
+
+    function filterByPrio(prio) {
+      currentPrioFilter = prio;
+      document.querySelectorAll(".prio-btn").forEach(btn => {
+        if (btn.dataset.prio.toLowerCase() == prio.toLowerCase()) {
+          btn.className = "prio-btn active px-3 py-1 text-xs font-medium rounded-md bg-slate-800 text-white";
+        } else {
+          btn.className = "prio-btn px-3 py-1 text-xs font-medium rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700";
+        }
+      });
+      renderCards();
+    }
+
+    function resetFilters() {
+      currentWeekFilter = 'all';
+      currentPrioFilter = 'all';
+      filterByWeek('all');
+      filterByPrio('all');
+    }
+
+    // MODAL
+    function openModal(id) {
+      const act = activitiesData.find(a => a.id === id);
+      if (!act) return;
+
+      const modalHeader = document.getElementById("modalHeader");
+      if (act.priority === "CRÍTICA") {
+        modalHeader.className = "p-6 bg-gradient-to-r from-amber-600 to-amber-700 text-white flex justify-between items-start";
+      } else if (act.id === 8) {
+        modalHeader.className = "p-6 bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex justify-between items-start";
+      } else {
+        modalHeader.className = "p-6 bg-gradient-to-r from-blue-700 to-indigo-800 text-white flex justify-between items-start";
+      }
+
+      document.getElementById("modalBadge").innerText = `Actividad ${act.id} · Prioridad ${act.priority}`;
+      document.getElementById("modalTitle").innerText = act.fullTitle;
+      document.getElementById("modalWeeks").innerText = `Cronograma: Semana(s) ${act.weeks.join(', ')} (${act.weeks.length} sem)`;
+      document.getElementById("modalWhy").innerText = act.why;
+      document.getElementById("modalResp").innerText = act.resp;
+      document.getElementById("modalDep").innerText = act.dep;
+      document.getElementById("modalSupport").innerText = act.support;
+      document.getElementById("modalDeliverable").innerText = act.deliverable;
+
+      document.getElementById("activityModal").classList.remove("hidden");
+      lucide.createIcons();
+    }
+
+    function closeModal() {
+      document.getElementById("activityModal").classList.add("hidden");
+    }
+
+    // Cierre modal con tecla ESC
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+</body>
+</html>
